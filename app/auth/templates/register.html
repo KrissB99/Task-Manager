@@ -1,0 +1,39 @@
+{% extends 'base.html' %}
+{% block title %}{{ title }}{% endblock title %}
+{% block body %}
+
+<div class="position-absolute w-50 top-50 start-50 translate-middle">
+
+    <div class="card w-50 border-2 shadow-lg mx-auto" style="background-color: rgba(216, 199, 169, 0.804)">
+        <div class="card-body text-center">
+            <h5 class="card-title">
+              <h3 class="text-dark font-monospace"> Welcome!</h3>
+              <hr>
+            </h5>
+            <div class="mx-3">
+              <!-- Email -->
+              <div class="form-floating mb-2">
+                <input type="email" class="form-control shadow" id="floatingInput" placeholder="name@example.com">
+                <label for="floatingInput">Email address</label>
+                <p class="text-end text-danger">Wrong email address!</p>
+              </div>
+              <!-- Password 1 --> 
+              <div class="form-floating mb-2">
+                <input type="password" class="form-control shadow" id="floatingPassword" placeholder="Password">
+                <label for="floatingPassword">Password</label>
+              </div>    
+              <!-- Password 2 -->
+              <div class="form-floating mb-2">
+                <input type="password" class="form-control shadow" id="floatingPassword" placeholder="Password">
+                <label for="floatingPassword">Password</label>
+              </div>    
+              <hr>
+              <button class="btn btn-success shadow w-100">Register</button>
+            </div>      
+        </div>
+        
+    </div>
+    
+</div>
+
+{% endblock body %}
