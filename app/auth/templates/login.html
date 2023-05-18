@@ -2,30 +2,27 @@
 {% block title %}{{ title }}{% endblock title %}
 {% block body %}
 
-<div class="position-absolute top-50 start-50 translate-middle">
+<div class="position-absolute top-50 start-50 translate-middle w-100">
 
-    <div class="card border-2 shadow-lg mx-auto">
-        <div class="card-body text-center">
-            <h5 class="card-title">
-            <h2><i class="bi bi-door-open"></i></h2>
-            <h3> LOG IN </h3>
+    <div class="card border-2 shadow-lg mx-auto" style="width: 30%">
+        <div class="card-body mx-3">
+            <h3 class="card-title text-center p-2">Welcome back!</h3>
             <hr>
-            </h5>
-            <div class="mb-3 row">
-                <label for="staticEmail" class="col-sm-3 col-form-label">Email</label>
-                <div class="col-sm-8">
-                    <input type="email" class="form-control" id="inputPassword">
-                  </div>
-              </div>
-              <div class="mb-3 row">
-                <label for="inputPassword" class="col-sm-3 col-form-label">Password</label>
-                <div class="col-sm-8">
-                  <input type="password" class="form-control" id="inputPassword">
-                </div>
-              </div>
-              <div class="col-auto">
-                <button type="submit" class="btn btn-light shadow-lg w-25 my-2">Login</button>
-              </div>            
+            <div class="mb-3">
+              <label for="exampleFormControlInput1" class="form-label">Email address</label>
+              <input type="email" class="form-control" id="email" placeholder="name@example.com">
+            </div>
+            <div class="mb-3">
+              <label for="exampleFormControlInput1" class="form-label">Password</label>
+              <input type="text" class="form-control" id="password" placeholder="**********">
+            </div>
+            <div class="col-auto text-center">
+              <button type="submit" class="btn btn-success shadow-lg w-100 my-2">Login</button>
+            </div>  
+            <hr>
+            <div class="text-center">
+              <a href="#" class="stretched-link link-underline-opacity-0">Forgot password?</a>   
+            </div>
         </div>
         
     </div>

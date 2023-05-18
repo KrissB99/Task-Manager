@@ -1,20 +1,21 @@
-from sqlalchemy import ForeignKey
-from sqlalchemy.orm import relationship
+from sqlalchemy import BLOB, Column, Float, LargeBinary, String, Integer, ForeignKey, DateTime
+from sqlalchemy.orm import DeclarativeBase, relationship
 from datetime import datetime
 
-from app import db
-from app.database.db_functions import *
+class Base(DeclarativeBase):
+    __allow_unmapped__ = True
+    
+    def to_date(date: datetime) -> datetime.strftime:
+        return date.strftime('%d.%m.%Y %H: %M')
 
-class Permissions(db.Model):
+class Permissions(Base):
     'Model for permissions'
     
-    __table_name__ = 'permissions'
-    __allow_unmapped__ = True
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = 'permissions'
     
-    id = db.Column(db.Integer, primary_key=True, index=True)
-    level = db.Column(db.Integer, nullable=False, unique=True)
-    name = db.Column(db.String)
+    id: int = Column(Integer, primary_key=True)
+    level: int = Column(Integer, nullable=True)
+    name: str = Column(String, nullable=True)
     
     def to_dict(self) -> dict:
         return {
@@ -26,25 +27,44 @@ class Permissions(db.Model):
     def __repr__(self) -> str:
         return f'Permission(id: {self.id}, level: {self.level}, name: {self.name})'
     
+class Types(Base):
+    'Model for types'
+    
+    __tablename__ = 'types'
+    
+    id: int = Column(Integer, primary_key=True, index=True)
+    name: str = Column(String, nullable=False) 
+    
+    # Foreign Keys
+    user_id: int = Column(Integer, ForeignKey('users.id'))
+    
+    def to_dict(self) -> dict: 
+        return {
+            'id': self.id, 
+            'name': self.name,
+            'user': self.user_id
+        }
+        
+    def __repr__(self) -> str:
+        return f'Type(id: {self.id}, name: {self.name}, user: {self.user_id})'
 
-class Users(db.Model):
+class Users(Base):
     'Model for users'
     
-    __table_name__ = 'users'
-    __allow_unmapped__ = True
-    __table_args__ = {'extend_existing': True}
+    __tablename__ = 'users'
     
-    id = db.Column(db.Integer, primary_key=True, index=True)
-    login = db.Column(db.String(30), nullable=False, unique=True)
-    email = db.Column(db.String(120), nullable=False, unique=True)
-    password = db.Column(db.String(30), nullable=False)
-    salt = db.Column(db.LargeBinary, nullable=False)
+    id: int = Column(Integer, primary_key=True, index=True)
+    login: str = Column(String(30), nullable=False, unique=True)
+    email: str = Column(String(120), nullable=False, unique=True)
+    password: BLOB = Column(BLOB, nullable=False)
+    salt: LargeBinary = Column(LargeBinary, nullable=False)
     
     # Foreign keys
-    permission_id = db.Column(db.Integer, ForeignKey('permissions.id'))
+    permission_id = Column(Integer, ForeignKey('permissions.id'))
     
     # Relationships
     permission: Permissions = relationship('permissions')
+    types: Types = relationship('types', uselist=True)
     
     def to_dict(self) -> dict:
         return {
@@ -57,52 +77,25 @@ class Users(db.Model):
     def __repr__(self) -> str:
         return f'User(id: {self.id}, email: {self.email}, login: {self.login}, \
                       permission: {self.permission.name})'
-                      
-
-class Types(db.Model):
-    'Model for types'
-    
-    __table_name__ = 'types'
-    __allow_unmapped__ = True
-    
-    id = db.Column(db.Integer, primary_key=True, index=True)
-    name = db.Column(db.String) 
-    
-    # Foreign Keys
-    user_id = db.Column(db.Integer, ForeignKey('user.id'))
-    
-    # Relations
-    user: Users = relationship('users')
-    
-    def to_dict(self) -> dict: 
-        return {
-            'id': self.id, 
-            'name': self.name,
-            'user': self.user.to_dict()
-        }
-        
-    def __repr__(self) -> str:
-        return f'Type(id: {self.id}, name: {self.name}, user: {self.user.to_dict()})'
     
     
-class Tasks(db.Model):
+class Tasks(Base):
     'Model for tasks'
     
-    __table_name__ = 'tasks'
-    __allow_unmapped__ = True
+    __tablename__ = 'tasks'
     
-    id = db.Column(db.Integer, primary_key=True, index=True)
-    name = db.Column(db.String, nullable=False)
-    description = db.Column(db.String, nullable=True)
-    importance = db.Column(db.String, default='low')
-    creation_date = db.Column(db.DateTime, nullable=False, default=datetime.now)
-    deadline = db.Column(db.DateTime)
-    end_date = db.Column(db.DateTime)
-    progress = db.Column(db.Float, nullable=False, default=0)
+    id: int = Column(Integer, primary_key=True, index=True)
+    name: str = Column(String, nullable=False)
+    description: str = Column(String, nullable=True)
+    importance: str = Column(String, default='low')
+    creation_date: datetime = Column(DateTime, default=datetime.now)
+    deadline: datetime = Column(DateTime, nullable=True)
+    end_date: datetime = Column(DateTime, nullable=True)
+    progress: float = Column(Float, nullable=False, default=0)
     
     # Foreign keys
-    user_id = db.Column(db.String, ForeignKey('users.id'))
-    type_id = db.Column(db.Integer, ForeignKey('types.id'))
+    user_id: int = Column(String, ForeignKey('users.id'))
+    type_id: int = Column(Integer, ForeignKey('types.id'))
     
     # Relationships
     user: Users = relationship('users')
@@ -114,14 +107,14 @@ class Tasks(db.Model):
             'name': self.name,
             'description': self.description, 
             'importance': self.importance,
-            'creation_date': to_date(self.creation_date), 
-            'deadline': to_date(self.deadline),
-            'end_date': to_date(self.end_date),
+            'creation_date': self.creation_date.to_date(), 
+            'deadline': self.deadline.to_date(),
+            'end_date': self.end_date.to_date(),
             'progress': self.progress
         }
         
     def __repr__(self) -> str:
         return f'Task(id: {self.id}, name: {self.name}, description: {self.description}, \
-                      importance: {self.importance}, creation_date: {to_date(self.creation_date)}, \
-                      deadline: {to_date(self.deadline)}, end_date: {to_date(self.end_date)},  \
+                      importance: {self.importance}, creation_date: {self.creation_date.to_date()}, \
+                      deadline: {self.deadline.to_date()}, end_date: {self.end_date.to_date()},  \
                       progress: {self.progress})'

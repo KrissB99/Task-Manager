@@ -1,56 +1,114 @@
-from datetime import datetime
-from app import db
+import contextlib
+from typing import TypeVar, Union, Type, Any
 
-def to_date(date) -> datetime:
-    return date.strftime('%d.%m.%Y %H: %M')
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session
 
-def add_rows(objects: db.Model) -> None:
-    """Function to add new objects to db
+from .models import Base, Permissions, Users, Types, Tasks
 
-    Args:
-        objects (db.Model): generator with data
-    """
-    db.session.add_all(list(objects))
-    db.session.commit()
+DataBaseObject = TypeVar('DataBaseObject', Permissions, Users, Types, Tasks)
+DataBaseModel = TypeVar('DataBaseModel', bound=Base)
+
+class DataBase: 
     
-def get_rows(object: db.Model) -> list:
-    """Function to get all rows from the specific table
-
-    Args:
-        object (db.Model): class of model
+    def __init__(self, url: str) -> None:
+        self._engine = create_engine(url)
         
-    Returns:
-        list: list with rows of specific table
-    """
-    return object.query.all()
+    def _use_session(self, method: str, data: Union[DataBaseObject, list[DataBaseObject]]) -> Union[DataBaseObject, list[DataBaseObject]]:
+        """Use specific method with db session
 
-def add_to_db(item: db.Model) -> None:
-    """Function to add an item to db
+        Args:
+            method (str): session method
+            data (Union[DataBaseObject, list[DataBaseObject]]): object from ORM or list of ORM objects
 
-    Args:
-        item (db.Model): row to add to db
-    """
-    db.session.add(item)
-    db.session.commit()
+        Returns:
+            Union[DataBaseObject, list[DataBaseObject]]: data with ids
+        """
+        if data:
+            with Session(self._engine) as session: 
+                _method = getattr(session, method)
+                _method(data)
+                session.commit()
+                if method == 'add':
+                    session.refresh(data)
+        return data
     
-def delete_from_db(item: db.Model) -> None:
-    """Function to delete from db
+    def get(self, model: Type[DataBaseModel]) -> list[DataBaseModel]:
+        """Method returning all rows from specific table
 
-    Args:
-        item (db.Model): Row to delete from db
-    """
-    db.session.delete(item)
-    db.session.commit()
+        Args:
+            model (Type[DataBaseModel]): ORM model
+
+        Returns:
+            list[DataBaseModel]: list of db objects (dict)
+        """
+        with Session(self._engine) as session: 
+            return [object.to_dict() for object in session.query(model).all()]
+        
+    def get_by_id(self, model: Type[DataBaseModel], id: int, as_dict: bool = True) -> dict[str, Any]:
+        """Method returning element from specific table by id
+
+        Args:
+            model (Type[DataBaseModel]): ORM model
+            id (int): row id
+            as_dict (bool, optional): Defailts to "True". Returns element as dict
+
+        Returns:
+            dict[str, Any]: element from specific table
+        """
+        with Session(self._engine) as session:
+            object = session.query(model).filter(model.id == id).first()
+            if object:
+                return object.to_dict() if as_dict else object
     
-def modify_db(object: db.Model, attr: dict) -> None:
-    """Function to modify data from db
+    def add(self, _object: DataBaseObject) -> DataBaseObject:
+        """Add object to db
 
-    Args:
-        object (db.Model): name of the specific model
-        attr (dict): dictionary with column name and values to modify
-    """
-    for key, value in attr.items():
-        if value == 'True' or value == '': bool(value)
-        if key == 'date': value = datetime.strptime(value, 'A%Y-%m-%d %H:%M:%S.%f')
-        setattr(object, key, value)
-    db.session.commit()
+        Args:
+            _object (DataBaseObject): ORM object
+
+        Returns:
+            DataBaseObject: Created object as dict
+        """
+        object = self._use_session('add', _object)
+        return object.to_dict()
+    
+    def delete(self, model: Type[DataBaseModel], id: int) -> None:
+        """Delete object from db
+
+        Args:
+            model (Type[DataBaseModel]): ORM model
+            id (int): objects id
+        """
+        _object = self.get_by_id(model, id, as_dict=False)
+        self._use_session('delete', _object)
+        
+    def update(self, model: Type[DataBaseModel], id: int, data: dict[str, Any]) -> DataBaseObject:
+        """Update data from db
+
+        Args:
+            model (Type[DataBaseModel]): ORM model
+            id (int): objects id
+            data (dict[str, Any]): data to update
+
+        Returns:
+            DataBaseObject: updated ORM object
+        """
+        with Session(self._engine) as session:
+            session.query(model).filter(model.id == id).update(data)
+            _object = session.query(model).filter(model.id == id).first()
+            session.commit()
+            session.refresh(_object)
+        return _object.to_dict()
+    
+    @property
+    @contextlib.contextmanager
+    def session(self) -> Session:
+        try:
+            s = Session(self._engine)
+            yield s
+        finally:
+            s.close()
+            
+    def create(self) -> None:
+        Base.metadata.create_all(self._engine)

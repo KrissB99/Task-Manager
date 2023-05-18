@@ -2,38 +2,35 @@
 {% block title %}{{ title }}{% endblock title %}
 {% block body %}
 
-<div class="position-absolute w-50 top-50 start-50 translate-middle">
+<div class="position-absolute top-50 start-50 translate-middle w-100">
 
-    <div class="card w-50 border-2 shadow-lg mx-auto" style="background-color: rgba(216, 199, 169, 0.804)">
-        <div class="card-body text-center">
-            <h5 class="card-title">
-              <h3 class="text-dark font-monospace"> Welcome!</h3>
-              <hr>
-            </h5>
-            <div class="mx-3">
-              <!-- Email -->
-              <div class="form-floating mb-2">
-                <input type="email" class="form-control shadow" id="floatingInput" placeholder="name@example.com">
-                <label for="floatingInput">Email address</label>
-                <p class="text-end text-danger">Wrong email address!</p>
-              </div>
-              <!-- Password 1 --> 
-              <div class="form-floating mb-2">
-                <input type="password" class="form-control shadow" id="floatingPassword" placeholder="Password">
-                <label for="floatingPassword">Password</label>
-              </div>    
-              <!-- Password 2 -->
-              <div class="form-floating mb-2">
-                <input type="password" class="form-control shadow" id="floatingPassword" placeholder="Password">
-                <label for="floatingPassword">Password</label>
-              </div>    
-              <hr>
-              <button class="btn btn-success shadow w-100">Register</button>
-            </div>      
-        </div>
-        
-    </div>
-    
+  <div class="card border-2 shadow-lg mx-auto" style="width: 30%">
+      <div class="card-body mx-3">
+          <h3 class="card-title text-center p-2">Welcome!</h3>
+          <hr>
+          <div class="mb-3">
+            <label for="exampleFormControlInput1" class="form-label">Email address</label>
+            <input type="email" class="form-control" id="email" placeholder="name@example.com">
+          </div>
+          <div class="mb-3">
+            <label for="exampleFormControlInput1" class="form-label">Password</label>
+            <input type="text" class="form-control" id="password" placeholder="**********">
+          </div>
+          <div class="mb-3">
+            <label for="exampleFormControlInput1" class="form-label">Confirm password</label>
+            <input type="text" class="form-control" id="password2" placeholder="**********">
+          </div>
+          <div class="col-auto text-center">
+            <button type="submit" class="btn btn-success shadow-lg w-100 my-2">Register</button>
+          </div>  
+          <hr>
+          <div class="text-center">
+            <a href="#" class="stretched-link link-underline-opacity-0">Already signed up?</a>   
+          </div>
+      </div>
+      
+  </div>
+
 </div>
 
 {% endblock body %}
