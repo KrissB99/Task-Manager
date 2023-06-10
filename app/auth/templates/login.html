@@ -1,32 +1,101 @@
-{% extends 'base.html' %}
+{% extends 'auth/base.html' %}
 {% block title %}{{ title }}{% endblock title %}
 {% block body %}
 
-<div class="position-absolute top-50 start-50 translate-middle w-100">
+<div class="position-absolute top-50 start-50 translate-middle w-100" x-data="registrationPage">
 
-    <div class="card border-2 shadow-lg mx-auto" style="width: 30%">
-        <div class="card-body mx-3">
-            <h3 class="card-title text-center p-2">Welcome back!</h3>
-            <hr>
-            <div class="mb-3">
-              <label for="exampleFormControlInput1" class="form-label">Email address</label>
-              <input type="email" class="form-control" id="email" placeholder="name@example.com">
-            </div>
-            <div class="mb-3">
-              <label for="exampleFormControlInput1" class="form-label">Password</label>
-              <input type="text" class="form-control" id="password" placeholder="**********">
-            </div>
-            <div class="col-auto text-center">
-              <button type="submit" class="btn btn-success shadow-lg w-100 my-2">Login</button>
-            </div>  
-            <hr>
-            <div class="text-center">
-              <a href="#" class="stretched-link link-underline-opacity-0">Forgot password?</a>   
-            </div>
+  <div class="card border-0 shadow-lg mx-auto" style="width: 38%; background-color: rgba(107, 163, 114, 0.137);">
+
+      <div class="card-body mx-3">
+
+        <div class="row align-items-start my-2">
+          <div class="col align-self-center">
+            
+          </div>
+          <div class="col align-self-center" style="min-width: 40%">
+            <h4 class="card-title text-center my-auto">Welcome back!</h4>
+          </div>
+          <div class="col align-self-center text-end">
+            <button type="button" 
+                    @click="clearRequest()" 
+                    class="btn btn-sm btn-outline-danger rounded-pill"
+                    x-show="request.email != '' || request.password != ''"
+                    @mouseover="clearButtonHtmlContent = 'Clear inputs'" 
+                    @mouseover.away="clearButtonHtmlContent = ''" 
+                    x-html="trashIcon + ' ' + clearButtonHtmlContent">
+            </button>
+          </div>
         </div>
-        
-    </div>
+
+        <hr>
+
+        <div class="input-group w-100 mb-3">
+          <label class="custom-label" for="email">Email</label>
+          <input type="text" class="form-control rounded-pill shadow w-50" placeholder="example@email.com" id="email" maxlength="30" x-model="request.email">
+          <p class="custom-info" x-text="request.email.length + '/' + 30"></p>
+        </div>
+        <div class="input-group w-100 mb-3">
+          <label class="custom-label" for="login">Password</label>
+          <input type="password" class="form-control rounded-pill shadow w-50" placeholder="********" id="password" x-model="request.password">
+          <p class="custom-info" x-show="request.password.length < 8"><i class="bi bi-info-circle text-danger"></i></p>
+          <p class="custom-info" x-show="request.password.length >= 8"><i class="bi bi-check2-circle text-success"></i></p>
+        </div>
+        <hr>
+
+          <div class="col-auto text-center">
+            <button type="submit" class="btn btn-outline-success rounded-pill shadow-lg w-100 my-2"
+                   :class="{'disabled': request.password == '' || request.email == ''}" @click="login()">LOG IN</button>
+          </div>  
+    
+      </div>
+      
+  </div>
 
 </div>
+
+<script>
+
+  document.addEventListener('alpine:init', () => {
+
+    Alpine.data('registrationPage', () => ({
+      trashIcon: '<i class="bi bi-trash"></i>',
+      clearButtonHtmlContent: '',
+      request: {email: '', password: ''},
+      termsAgreement: false, 
+      clearRequest() {
+        this.request.email = ''
+        this.request.password = ''
+      },
+      async login() {
+        const resp = await fetch('/auth/login', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify( this.request )
+        })
+        const data = await resp.json()
+
+        if (resp.ok) {
+          await Swal.fire({
+            position: 'top-end',
+            icon: 'success',
+            title: 'Logged in succesfully!',
+            showConfirmButton: false,
+            timer: 1500
+          })
+          window.location = '/dashboard'
+        }
+        else {
+          Swal.fire(
+              "Sorry! 😥",
+              data.detail,
+              'error'
+          )
+        }
+      }
+    }))
+
+  })
+
+</script>
 
 {% endblock body %}

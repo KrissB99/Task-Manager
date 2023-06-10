@@ -4,9 +4,9 @@ from typing import TypeVar, Union, Type, Any
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from .models import Base, Permissions, Users, Types, Tasks
+from .models import Base, Users, Types, Tasks
 
-DataBaseObject = TypeVar('DataBaseObject', Permissions, Users, Types, Tasks)
+DataBaseObject = TypeVar('DataBaseObject', Users, Types, Tasks)
 DataBaseModel = TypeVar('DataBaseModel', bound=Base)
 
 class DataBase: 
@@ -112,3 +112,13 @@ class DataBase:
             
     def create(self) -> None:
         Base.metadata.create_all(self._engine)
+        
+def object_to_dict(object: Type[DataBaseObject]) -> dict:
+    if object:
+        return object.to_dict()
+    return None
+
+def objects_to_dicts(objects: Type[DataBaseModel]) -> list[dict]:
+    if objects:
+        return [element.to_dict() for element in objects]
+    return None

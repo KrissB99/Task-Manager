@@ -1,0 +1,123 @@
+{% extends 'auth/base.html' %}
+{% block title %}{{ title }}{% endblock title %}
+{% block body %}
+
+<div class="pb-5" x-data="dashboardPage">
+    <div class="row row-cols-xl-3 row-cols-md-2 g-4 p-5 mx-0">
+
+        <!-- Add project card -->
+        <div class="col">
+            <div class="card shadow h-100">
+                <div class="card-body">
+                    <div class="card-body h-100 d-flex justify-content-center align-items-center gap-2">
+                        <button type="button" @click="openModal('addTypeModal')"
+                                class="btn btn-outline-success btn-lg rounded-pill"><i
+                                class="bi bi-plus"></i> Add section
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <template x-if="projects.length != 0">
+
+            <template x-for="(project, i) in projects" :key="i">
+                <div class="col">
+                    <div class="card shadow h-100">
+                        <div class="card-header pt-3 pb-2">
+                            <div class="row">
+                                <div class="col my-auto mt-0">
+                                    <span class="badge bg-secondary rounded-pill" 
+                                          :class="{'bg-success': calculateProgress(project.tasks) > 90,
+                                                   'bg-danger': calculateProgress(project.tasks) < 50
+                                           }" 
+                                          x-text="calculateProgress(project.tasks) + '%'"></span>
+                                </div>
+                                <div class="col my-auto">
+                                    <h5 class="card-title text-center fw-bold" style="color: #008E9B" x-text="project.name"></h5>
+                                </div>
+                                <div class="col my-auto text-end">
+                                    <button type="button" class="btn rounded-pill pt-0" @click="openModal('addTaskModal')">
+                                        <i class="bi bi-plus-circle text-success"></i>
+                                    </button>
+                                    <button type="button" class="btn rounded-pill pt-0">
+                                        <i class="bi bi-three-dots"></i>
+                                    </button>
+                                </div>
+                            </div>
+                            
+                        </div>
+
+                        <div class="card-body">
+                           
+                            <table class="table">
+                                <template x-for="task in project.tasks">
+                                    <tbody class="text-start">
+                                        <tr>
+                                          <th>
+                                              <input class="form-check-input border-2 border-success" type="checkbox" id="task-done" value="">
+                                          </th>
+                                          <td x-text="task.name"></td>
+                                          <td class="text-end">
+                                                <button type="button" class="btn btn-sm rounded-pill">
+                                                    <i class="bi bi-info-circle text-primary"></i>
+                                                </button>
+                                              <button type="button" class="btn btn-sm rounded-pill">
+                                                  <i class="bi bi-tools text-warning"></i>
+                                              </button>
+                                              <button type="button" class="btn btn-sm rounded-pill">
+                                                  <i class="bi bi-trash3-fill text-danger"></i>
+                                              </button>
+                                          </td>
+                                        </tr>                            
+                                      </tbody>
+                                </template>
+                              </table>
+                            
+                        </div>
+                    </div>
+                </div>
+            </template>
+
+        </template>
+    </div>
+</div>
+
+<script>
+
+    document.addEventListener('alpine:init', () => {
+
+        Alpine.data('dashboardPage', () => ({
+          projects: [],
+          init() {
+            this.getProjects()
+          },
+          async getProjects() {
+            const resp = await fetch('/types')
+            const data = await resp.json()
+            this.projects = data
+          },
+          calculateProgress(tasks) {
+            const totalTasks = tasks.length;
+            if (totalTasks > 1) {
+                const totalProgress = tasks.reduce((acc, task) => acc + task.progress, 0);
+                return totalProgress / totalTasks;
+            }
+            return 0
+          },
+          openModal() {
+
+          },
+          addTask() {
+            
+          },
+          addType() {
+
+          },
+        }))
+    
+      })
+
+</script>
+
+{% endblock body %}

@@ -1,0 +1,38 @@
+{% extends 'auth/base.html' %}
+{% block title %}{{ title }}{% endblock title %}
+{% block body %}
+
+<style>
+
+    .center {
+        display: block;
+        margin: auto;
+        margin-top: 20px;
+      }
+
+</style>
+
+<div class="position-absolute top-50 start-50 translate-middle w-100">
+
+    <!-- <h2 class="text-dark nav-link-font text-center pb-3">Task Manager</h2> -->
+
+    <div class="w-100 h-100">
+        <img src="/static/img/Krysia.jpg" class="rounded-pill shadow center" alt="Me" width="150" />
+    </div>
+    
+    <div class="w-100 h-100">
+        <img src="/static/img/hello.png" class="center" width="200" alt="hello sign"/>
+    </div>
+    
+    <div class="mx-auto" style="width: 40%">
+        <p class="text-center fst-italic">My name is Krystyna Banaszewska. 
+            I am studying Computer Science at Lublin's University of Technology, 
+            and this is my credit project from the course <br>'Basics of Web Applications'.  <br><br>
+            This application is designed to help you organize your plans for work, school or private affairs.
+        </p>
+    </div>
+
+</div>
+
+
+{% endblock body %}

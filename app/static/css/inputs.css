@@ -1,0 +1,14 @@
+
+.custom-label {
+    margin: auto;
+    width: 25%;
+    font-weight: bold;
+}
+
+.custom-info {
+    width: 10%;
+    margin: auto;
+    text-align: center;
+    padding-left: 10px;
+    color:  rgba(130, 124, 139, 0.753)
+}

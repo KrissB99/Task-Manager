@@ -52,3 +52,8 @@ html, body {
     background-color: #dddddd00;
     color: rgb(195, 86, 39);
   }
+
+  .nav-link-font {
+    color: #b9a2a2;
+    text-shadow: -1px 0 black, 0 1px black, 1px 0 black, 0 -1px black;
+  }

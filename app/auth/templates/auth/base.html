@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="en">
+  
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+  
+    <!-- Style css for base -->
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/style.css') }}">
+    <link rel="stylesheet" type="text/css" href="{{ url_for('static', filename='css/inputs.css') }}">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.10.3/font/bootstrap-icons.css">
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js" integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe" crossorigin="anonymous"></script>
+    <!-- favicon -->
+    <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
+    <!-- Alpine.js -->
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.1/dist/cdn.min.js"></script>
+    <!-- Sweet Alert 2 -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+    <title>{% block title %}{% endblock title %}</title>
+</head>
+
+<body>
+
+  <div class="bg-img">
+
+    <nav class="topnav navbar bg-nav">
+      <div class="container-fluid">
+        <a class="navbar-brand nav-link-font"><h4 class="text-light">Task Manager</h4></a>
+        <ul class="nav">
+          <li class="nav-item">
+            <a class="nav-link {% if request.endpoint == 'auth.home_page' %}text-warning{% endif %}" href="/">Home</a>
+          </li>
+          <!-- If user in session -->
+          {% if session['email'] %}
+            <li class="nav-item">
+              <a class="nav-link {% if request.endpoint == 'main.dashboard' %}text-warning{% endif %}" href="/dashboard">Dashboard</a>
+            </li>
+            <!-- If user is admin -->
+            {% if session['admin'] %}
+              <li class="nav-item">
+                <a class="nav-link {% if request.endpoint == 'admin.admin' %}text-warning{% endif %}" href="/admin">Admin</a>
+              </li>
+            {% endif %}
+          {% endif %}
+        </ul>
+
+        <div class="d-flex">
+          <ul class="nav">            
+
+            <!-- If session is active -->
+            {% if session['email'] %}
+              <li class="nav-item">
+                <a class="nav-link nav-link-font {% if request.endpoint == 'auth.registration' %}text-warning{% endif %}" href="/">User panel</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link nav-link-font" href="/auth/logout">Logout</a>
+              </li>
+            {% else %}
+              <li class="nav-item">
+                <a class="nav-link nav-link-font {% if request.endpoint == 'auth.login' %}text-warning{% endif %}" href="/auth/log-in">Login</a>
+              </li>
+              <li class="nav-item">
+                <a class="nav-link nav-link-font {% if request.endpoint == 'auth.registration' %}text-warning{% endif %}" href="/auth/register">Register</a>
+              </li>
+            {% endif %}
+
+          </ul>
+        </div>
+      </div>
+    </nav>
+
+      {% block body %}
+  
+    
+      {% endblock body %}
+
+    <div class="position-absolute bottom-0 start-50 translate-middle-x w-100">
+      <footer class="text-center p-2">
+        2023 &copy Copyright: Krystyna Banaszewska
+      </footer>
+    </div>
+
+  </div>
+  
+</body>
+</html>
