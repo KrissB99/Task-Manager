@@ -10,8 +10,7 @@ def types():
 
 @main.route('/types', methods=['POST'])
 def create_type():
-    data = request.form.to_dict()
-    return jsonify(crud.add_type(data))
+    return jsonify(crud.add_type(request.json))
 
 @main.route('/types/<int:id>', methods=['PATCH'])
 def update_type(id: int):
@@ -23,3 +22,17 @@ def delete_type(id: int):
     return jsonify(crud.remove_type(id))
 
 # TASKS
+
+@main.route('/types', methods=['POST'])
+def create_task():
+    data = request.form.to_dict()
+    return jsonify(crud.add_task(data))
+
+@main.route('/tasks/<int:id>', methods=['PATCH'])
+def update_task(id: int):
+    data = request.form.to_dict()
+    return jsonify(crud.change_task(id, data))
+
+@main.route('/tasks/<int:id>', methods=['DELETE'])
+def delete_task(id: int):
+    return jsonify(crud.remove_task(id))

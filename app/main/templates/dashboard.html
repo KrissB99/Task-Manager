@@ -3,17 +3,27 @@
 {% block body %}
 
 <div class="pb-5" x-data="dashboardPage">
+
+    <!-- Modals imported from components -->
+    {% from 'components/modals-alpine.j2' import addTaskModal, addTypeModal %}
+
+    {{ addTaskModal() }}
+    {{ addtypeModal }}
+
     <div class="row row-cols-xl-3 row-cols-md-2 g-4 p-5 mx-0">
 
         <!-- Add project card -->
         <div class="col">
             <div class="card shadow h-100">
+                <div class="card-header"><h5 class="text-center fw-bold my-auto p-2" style="color: #e745bf">Add section</h5></div>
                 <div class="card-body">
                     <div class="card-body h-100 d-flex justify-content-center align-items-center gap-2">
-                        <button type="button" @click="openModal('addTypeModal')"
-                                class="btn btn-outline-success btn-lg rounded-pill"><i
-                                class="bi bi-plus"></i> Add section
-                        </button>
+                        
+                        <div class="input-group shadow mb-3">
+                            <input type="text" class="form-control" placeholder="Type new section name" aria-label="Add section" aria-describedby="add-type-button" x-model="newTypeName">
+                            <button class="btn btn-outline-success" type="button" id="add-type-button" @click="addType()"><i class="bi bi-plus-circle"></i> Add</button>
+                        </div>
+
                     </div>
                 </div>
             </div>
@@ -28,7 +38,8 @@
                             <div class="row">
                                 <div class="col my-auto mt-0">
                                     <span class="badge bg-secondary rounded-pill" 
-                                          :class="{'bg-success': calculateProgress(project.tasks) > 90,
+                                          x-show="project.tasks.length != 0" 
+                                         :class="{'bg-success': calculateProgress(project.tasks) > 90,
                                                    'bg-danger': calculateProgress(project.tasks) < 50
                                            }" 
                                           x-text="calculateProgress(project.tasks) + '%'"></span>
@@ -48,31 +59,45 @@
                             
                         </div>
 
-                        <div class="card-body">
+                        <div class="card-body overflow-auto" style="height: 25vh;">
+
+                            <template x-if="project.tasks.length > 0">
                            
-                            <table class="table">
-                                <template x-for="task in project.tasks">
-                                    <tbody class="text-start">
-                                        <tr>
-                                          <th>
-                                              <input class="form-check-input border-2 border-success" type="checkbox" id="task-done" value="">
-                                          </th>
-                                          <td x-text="task.name"></td>
-                                          <td class="text-end">
+                                <table class="table">
+                                    <template x-for="task in project.tasks">
+                                        <tbody class="text-start">
+                                            <tr>
+                                            <th>
+                                                <input class="form-check-input border-2 border-success" type="checkbox" id="task-done" value="">
+                                            </th>
+                                            <td x-text="task.name"></td>
+                                            <td class="text-end">
+                                                    <button type="button" class="btn btn-sm rounded-pill">
+                                                        <i class="bi bi-info-circle text-primary"></i>
+                                                    </button>
                                                 <button type="button" class="btn btn-sm rounded-pill">
-                                                    <i class="bi bi-info-circle text-primary"></i>
+                                                    <i class="bi bi-tools text-warning"></i>
                                                 </button>
-                                              <button type="button" class="btn btn-sm rounded-pill">
-                                                  <i class="bi bi-tools text-warning"></i>
-                                              </button>
-                                              <button type="button" class="btn btn-sm rounded-pill">
-                                                  <i class="bi bi-trash3-fill text-danger"></i>
-                                              </button>
-                                          </td>
-                                        </tr>                            
-                                      </tbody>
-                                </template>
-                              </table>
+                                                <button type="button" class="btn btn-sm rounded-pill">
+                                                    <i class="bi bi-trash3-fill text-danger"></i>
+                                                </button>
+                                            </td>
+                                            </tr>                            
+                                        </tbody>
+                                    </template>
+                                </table>
+
+                            </template>
+
+                            <template x-if="project.tasks.length == 0">
+
+                                <div class="alert text-center my-auto" role="alert">
+                                    <h4 class="alert-heading text-muted">There is nothing to show!</h4>
+                                    <hr>
+                                    <button class="btn btn-outline-success btn-sm rounded-pill w-100 mt-2" @click="openAddTaskModal(project)"><i class="bi bi-plus-circle"></i> Add first task</button>
+                                  </div>
+
+                            </template>
                             
                         </div>
                     </div>
@@ -89,6 +114,9 @@
 
         Alpine.data('dashboardPage', () => ({
           projects: [],
+          header: '',
+          newTask: {name: '', description: '', importance: '', deadline: '', type_id: ''},
+          newTypeName: '',
           init() {
             this.getProjects()
           },
@@ -105,14 +133,39 @@
             }
             return 0
           },
-          openModal() {
-
+          openAddTaskModal(project) {
+            bootstrap.Modal.getOrCreateInstance('#addTaskModal').show()
+            this.header = `Add task to - <b class="text-primary-emphasis">${project.name}</b>`
+            this.newTask.type_id = project.id
           },
-          addTask() {
-            
-          },
-          addType() {
+          async addTask() {
+            const resp = await fetch(`/tasks`, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify( this.newTask )
+            })
+            const data = await resp.json()
 
+            if (resp.ok) { 
+                this.getProjects()
+                Swal.fire("Success!", resp.detail, 'success') 
+            }
+            else { Swal.fire("Sorry!", resp.detail, 'error') }
+          },
+          async addType() {
+            const resp = await fetch(`/types`, {
+                method: 'POST',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify( this.newTypeName )
+            })
+            const data = await resp.json()
+
+            if (resp.ok) { 
+                this.newTypeName = ''
+                this.getProjects()
+                Swal.fire("Success!", resp.detail, 'success') 
+            }
+            else { Swal.fire("Sorry!", resp.detail, 'error') }
           },
         }))
     

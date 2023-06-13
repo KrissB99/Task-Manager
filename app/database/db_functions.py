@@ -30,7 +30,11 @@ class DataBase:
                 _method(data)
                 session.commit()
                 if method == 'add':
-                    session.refresh(data)
+                    if isinstance(data, list):
+                        for obj in data:
+                            session.refresh(obj)
+                    else:
+                        session.refresh(data)
         return data
     
     def get(self, model: Type[DataBaseModel]) -> list[DataBaseModel]:
