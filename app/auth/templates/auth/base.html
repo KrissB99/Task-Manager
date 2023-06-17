@@ -17,6 +17,8 @@
     <link rel="shortcut icon" href="{{ url_for('static', filename='img/favicon.ico') }}">
     <!-- Alpine.js -->
     <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.12.1/dist/cdn.min.js"></script>
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
     <!-- Sweet Alert 2 -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
     <title>{% block title %}{% endblock title %}</title>
@@ -53,7 +55,7 @@
             <!-- If session is active -->
             {% if session['email'] %}
               <li class="nav-item">
-                <a class="nav-link nav-link-font {% if request.endpoint == 'auth.registration' %}text-warning{% endif %}" href="/">User panel</a>
+                <a class="nav-link nav-link-font {% if request.endpoint == 'auth.user_panel' %}text-warning{% endif %}" href="/auth/user-panel">User panel</a>
               </li>
               <li class="nav-item">
                 <a class="nav-link nav-link-font" href="/auth/logout">Logout</a>

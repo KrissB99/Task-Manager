@@ -21,6 +21,7 @@ class Types(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False) 
+    progress = Column(Float, default=0)
     
     # Foreign Keys
     user_id = Column(Integer, ForeignKey('users.id'))
@@ -48,12 +49,9 @@ class Tasks(Base):
     
     id = Column(Integer, primary_key=True, index=True)
     name = Column(String, nullable=False)
-    description = Column(String, nullable=True)
     importance = Column(String, default='low')
     creation_date = Column(DateTime, default=datetime.now)
-    deadline = Column(DateTime, nullable=True)
-    end_date = Column(DateTime, nullable=True)
-    progress = Column(Float, nullable=False, default=0)
+    progress = Column(Boolean, nullable=False, default=0)
     
     # Foreign keys
     type_id = Column(Integer, ForeignKey('types.id'))
@@ -65,19 +63,14 @@ class Tasks(Base):
         return {
             'id': self.id,
             'name': self.name,
-            'description': self.description, 
             'importance': self.importance,
             'creation_date': self.to_date(self.creation_date), 
-            'deadline': self.to_date(self.deadline),
-            'end_date': self.to_date(self.end_date),
             'progress': self.progress
         }
         
     def __repr__(self) -> str:
-        return f'Task(id: {self.id}, name: {self.name}, description: {self.description}, \
-                      importance: {self.importance}, creation_date: {self.creation_date.to_date()}, \
-                      deadline: {self.deadline.to_date()}, end_date: {self.end_date.to_date()},  \
-                      progress: {self.progress})'
+        return f'Task(id: {self.id}, name: {self.name}, progress: {self.progress}\
+                      importance: {self.importance}, creation_date: {self.to_date(self.creation_date)})'
 
 
 class Users(Base):

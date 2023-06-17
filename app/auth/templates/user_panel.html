@@ -1,0 +1,120 @@
+{% extends 'auth/base.html' %}
+{% block title %}{{ title }}{% endblock title %}
+{% block body %}
+
+<div class="position-absolute top-50 start-50 translate-middle w-100" x-data="userPanel">
+
+  <div class="card border-0 shadow-lg mx-auto" style="width: 38%; background-color: rgba(107, 163, 114, 0.137);">
+
+      <div class="card-body mx-3">
+
+        <div class="row align-items-start my-2">
+            <div class="col align-self-center">
+              
+            </div>
+            <div class="col align-self-center">
+              <h4 class="card-title text-center my-auto">User Info</h4>
+            </div>
+            <div class="col align-self-center text-end">
+                <div class="col-auto text-center">
+                    <button type="submit" class="btn btn-outline-danger rounded-pill shadow-lg w-75 my-2"
+                            @click="deleteUser()"><i class="bi bi-trash3"></i> Delete user</button>
+                  </div> 
+            </div>
+          </div>
+
+        <hr>
+
+        <div class="input-group w-100 mb-3">
+            <label class="custom-label" for="login">Login</label>
+            <input type="text" class="form-control rounded-pill shadow w-50" id="login" maxlength="30" x-model="request.login">
+            <p class="custom-info" x-text="request.login.length + '/' + 30"></p>
+          </div>
+          <div class="input-group w-100 mb-3">
+            <label class="custom-label" for="login">Email address</label>
+            <input type="text" class="form-control rounded-pill shadow w-50" id="email" maxlength="120" x-model="request.email">
+            <p class="custom-info" x-text="request.email.length + '/' + 120"></p>
+          </div>
+          <hr>
+
+          <div class="col-auto text-center">
+            <button type="submit" class="btn btn-outline-success rounded-pill shadow-lg w-75 my-2"
+                    @click="updateUserInfo()">CHANGE USER INFO</button>
+          </div>  
+
+      </div>
+      
+  </div>
+
+</div>
+
+<script>
+
+  userId = '{{ session["id"] }}'
+
+  document.addEventListener('alpine:init', () => {
+
+    Alpine.data('userPanel', () => ({
+
+      user: null, 
+      request: {login: '', email: ''},
+      changeInfo: false, 
+      
+      init() {
+        this.getUser()
+      },
+      
+      async getUser() {
+        const resp = await fetch(`/auth/users/${userId}`)
+        const data = await resp.json()
+        this.user = data
+        this.request.login = this.user.login
+        this.request.email = this.user.email
+      },
+      async updateUserInfo() {
+        const resp = await fetch(`/auth/users/${userId}`, {
+            method: 'PATCH',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify( this.request )
+          })
+          const data = await resp.json()
+  
+          if (resp.ok) {
+            await Swal.fire({
+              position: 'top-end',
+              icon: 'success',
+              title: data.detail,
+              showConfirmButton: false,
+              timer: 1500
+            })
+          }
+          else {
+            Swal.fire(
+                "Sorry! 😥",
+                data.detail,
+                'error'
+            )
+          }
+      },
+      async deleteUser() {
+        const resp = await fetch(`/auth/users/${userId}`, { method:'DELETE' })
+        const data = await resp.json()
+        if (resp.ok) {
+            await Swal.fire({
+                position: 'top-end',
+                icon: 'success',
+                title: data.detail,
+                showConfirmButton: false,
+                timer: 1500
+            })
+            window.location = '/auth/log-in'
+        }
+      },
+    
+    }))
+
+  })
+
+</script>
+
+{% endblock body %}

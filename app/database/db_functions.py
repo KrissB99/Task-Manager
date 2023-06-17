@@ -4,7 +4,7 @@ from typing import TypeVar, Union, Type, Any
 from sqlalchemy import create_engine
 from sqlalchemy.orm import Session
 
-from .models import Base, Users, Types, Tasks
+from .models import Base, Tasks, Users, Types
 
 DataBaseObject = TypeVar('DataBaseObject', Users, Types, Tasks)
 DataBaseModel = TypeVar('DataBaseModel', bound=Base)

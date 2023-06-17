@@ -3,6 +3,7 @@ from app import db
 from app.auth import auth, crud
 from app.helpers.security import Security
 from app.database.models import Users
+from app.helpers.session_func import clear_session, update_session
 
 @auth.route('/users/')
 def users():
@@ -11,6 +12,11 @@ def users():
 @auth.route('/users/<int:id>')
 def user(id: int):
     return crud.get_user(id=id)
+
+@auth.route('/users/<int:id>', methods=['PATCH'])
+def update_user_info(id: int):
+    data = request.json
+    return crud.update_user(id=id, data=data)
 
 @auth.route('/users', methods=['POST'])
 def register():
@@ -40,28 +46,22 @@ def login():
     # if user exist
     if user: 
         if Security.check_password(data['email'], data['password']):
+            
             # Put data to session
-            session['id'] = user['id']
-            session['email'] = user['email']
-            session['login'] = user['login']
-            session['admin'] = user['admin']
+            update_session(user)
             
             # If email and password match
             return {'detail': 'Logged in succesfully!'}
         
         # If email exist but wrong password
-        return {'detail': 'Wrong password! 😥'}
+        return {'detail': 'Wrong password! 😥'}, 400
     
     # If user doesn't exist
-    return {'detail': 'There is no user with such an email in the database! 😥'}
+    return {'detail': 'There is no user with such an email in the database! 😥'}, 400
 
 @auth.route('/logout')
 def logout():
-    # Clear session
-    session['id'] = None
-    session['email'] = None
-    session['login'] = None
-    session['admin'] = None
+    clear_session()
     return redirect('/auth/log-in')
     
 @auth.route('/users/<int:id>', methods=['DELETE'])

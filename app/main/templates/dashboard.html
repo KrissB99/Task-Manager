@@ -5,10 +5,9 @@
 <div class="pb-5" x-data="dashboardPage">
 
     <!-- Modals imported from components -->
-    {% from 'components/modals-alpine.j2' import addTaskModal, addTypeModal %}
+    {% from 'components/modals-alpine.j2' import addTaskModal %}
 
     {{ addTaskModal() }}
-    {{ addtypeModal }}
 
     <div class="row row-cols-xl-3 row-cols-md-2 g-4 p-5 mx-0">
 
@@ -48,11 +47,11 @@
                                     <h5 class="card-title text-center fw-bold" style="color: #008E9B" x-text="project.name"></h5>
                                 </div>
                                 <div class="col my-auto text-end">
-                                    <button type="button" class="btn rounded-pill pt-0" @click="openModal('addTaskModal')">
+                                    <button type="button" class="btn rounded-pill pt-0" @click="openAddTaskModal(project)">
                                         <i class="bi bi-plus-circle text-success"></i>
                                     </button>
-                                    <button type="button" class="btn rounded-pill pt-0">
-                                        <i class="bi bi-three-dots"></i>
+                                    <button type="button" class="btn rounded-pill pt-0" @click="deleteType(project.id)">
+                                        <i class="bi bi-trash3-fill text-danger"></i>
                                     </button>
                                 </div>
                             </div>
@@ -64,21 +63,24 @@
                             <template x-if="project.tasks.length > 0">
                            
                                 <table class="table">
-                                    <template x-for="task in project.tasks">
-                                        <tbody class="text-start">
+                                    <template x-for="(task, i) in project.tasks">
+                                        <tbody class="text-start align-middle">
                                             <tr>
-                                            <th>
-                                                <input class="form-check-input border-2 border-success" type="checkbox" id="task-done" value="">
-                                            </th>
-                                            <td x-text="task.name"></td>
+                                            <td>
+                                                <span class="badge" x-text="i+1" 
+                                                     :class="{'bg-primary': task.importance == 'low',
+                                                              'bg-warning': task.importance == 'medium',
+                                                              'bg-danger': task.importance == 'high'}"></span>
+                                            </td>
+                                            <td x-text="task.name" :class="task.progress == 1 ? 'text-decoration-line-through' : ''"></td>
                                             <td class="text-end">
-                                                    <button type="button" class="btn btn-sm rounded-pill">
-                                                        <i class="bi bi-info-circle text-primary"></i>
-                                                    </button>
-                                                <button type="button" class="btn btn-sm rounded-pill">
-                                                    <i class="bi bi-tools text-warning"></i>
+                                                <button type="button" class="btn btn-sm btn-success rounded-pill" @click="markAsDone(task.id)" x-show="task.progress == 0">
+                                                    <i class="bi bi-check-lg"></i>
                                                 </button>
-                                                <button type="button" class="btn btn-sm rounded-pill">
+                                                <button type="button" class="btn btn-sm btn-danger rounded-pill" @click="markAsToDo(task.id)" x-show="task.progress == 1">
+                                                    <i class="bi bi-x-lg"></i>
+                                                </button>
+                                                <button type="button" class="btn btn-sm rounded-pill" @click="deleteTask(task.id, project.id)">
                                                     <i class="bi bi-trash3-fill text-danger"></i>
                                                 </button>
                                             </td>
@@ -115,29 +117,25 @@
         Alpine.data('dashboardPage', () => ({
           projects: [],
           header: '',
-          newTask: {name: '', description: '', importance: '', deadline: '', type_id: ''},
+          newTask: {name: '', importance: '', type_id: ''},
           newTypeName: '',
           init() {
-            this.getProjects()
+            this.getProjects() // pobranie projektow z taskami
           },
           async getProjects() {
             const resp = await fetch('/types')
             const data = await resp.json()
             this.projects = data
           },
-          calculateProgress(tasks) {
-            const totalTasks = tasks.length;
-            if (totalTasks > 1) {
-                const totalProgress = tasks.reduce((acc, task) => acc + task.progress, 0);
-                return totalProgress / totalTasks;
-            }
-            return 0
-          },
+
+          // TASKS
+
           openAddTaskModal(project) {
             bootstrap.Modal.getOrCreateInstance('#addTaskModal').show()
             this.header = `Add task to - <b class="text-primary-emphasis">${project.name}</b>`
             this.newTask.type_id = project.id
           },
+
           async addTask() {
             const resp = await fetch(`/tasks`, {
                 method: 'POST',
@@ -147,25 +145,90 @@
             const data = await resp.json()
 
             if (resp.ok) { 
-                this.getProjects()
-                Swal.fire("Success!", resp.detail, 'success') 
+                this.getProjects() // pobranie projektow z taskami
+                bootstrap.Modal.getOrCreateInstance('#addTaskModal').hide() // zamkniecie modala
+                // Clear inputs
+                this.newTask.name = ''
+                this.newTask.importance = '',
+                this.task_id = ''
+                Swal.fire("Success!", resp.detail, 'success') // wyswietlenie komunikatu o sukcesie
             }
             else { Swal.fire("Sorry!", resp.detail, 'error') }
           },
+          async deleteTask(taskId) {
+            const resp = await fetch(`/tasks/${taskId}`, { method: 'DELETE' })
+            const data = await resp.json()
+
+            if (resp.ok) { 
+                this.getProjects() // pobranie projektow z taskami
+                Swal.fire("Success!", resp.detail, 'success')  // wyswietlenie komunikatu o sukcesie
+            }
+            else { Swal.fire("Sorry!", resp.detail, 'error') } // wyswietlenie komunikatu o porazce
+          },
+
+          // TYPES
+
           async addType() {
             const resp = await fetch(`/types`, {
                 method: 'POST',
                 headers: { "Content-Type": "application/json" },
                 body: JSON.stringify( this.newTypeName )
             })
+
+            this.newTypeName = '' // usuniecie nazwy z inputa
+            location.reload()
+          },
+          async deleteType(typeId) {
+            const resp = await fetch(`/types/${typeId}`, { method: 'DELETE' })
             const data = await resp.json()
 
             if (resp.ok) { 
-                this.newTypeName = ''
-                this.getProjects()
-                Swal.fire("Success!", resp.detail, 'success') 
+                this.getProjects()// pobranie projektow z taskami
+                Swal.fire("Success!", resp.detail, 'success')  // wyswietlenie komunikatu o sukcesie
+            }
+            else { Swal.fire("Sorry!", resp.detail, 'error') } // wyswietlenie komunikatu o porazce
+          },
+
+          // PROGRESS
+
+          async markAsDone(taskId) {
+            const resp = await fetch(`/tasks/${taskId}`, {
+                method: 'PATCH',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify( {progress: 1} )
+            })
+            const data = await resp.json()
+
+            if (resp.ok) { 
+                this.getProjects()// pobranie projektow z taskami
+                Swal.fire("Success!", resp.detail, 'success')  // wyswietlenie komunikatu o sukcesie
             }
             else { Swal.fire("Sorry!", resp.detail, 'error') }
+          },
+          async markAsToDo(taskId) {
+            const resp = await fetch(`/tasks/${taskId}`, {
+                method: 'PATCH',
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify( {progress: 0} )
+            })
+            const data = await resp.json()
+
+            if (resp.ok) { 
+                this.getProjects()// pobranie projektow z taskami
+                Swal.fire("Success!", resp.detail, 'success')  // wyswietlenie komunikatu o sukcesie
+            }
+            else { Swal.fire("Sorry!", resp.detail, 'error') }
+          },
+
+          // FUNCTIONS
+
+          calculateProgress(tasks) {
+            const totalTasks = tasks.length;
+            if (totalTasks > 1) {
+                const totalProgress = tasks.reduce((acc, task) => acc + task.progress, 0);
+                return totalProgress / totalTasks;
+            }
+            return 0
           },
         }))
     

@@ -1,7 +1,10 @@
 from typing import Any
+
+from flask import session
 from app.database.db_functions import object_to_dict, objects_to_dicts
 from app.database.models import Users
 from app import db
+from app.helpers.session_func import clear_session, update_session
 
 # CRUD for Users table
 
@@ -27,16 +30,13 @@ def get_user(id: int = None, email: str = None, login: str = None):
     """
     with db.session as session:
         if id != None:  
-            user = db.get_by_id(Users, id)
+            return db.get_by_id(Users, id)
         elif email != None: 
-            user = session.query(Users).filter(Users.email == email).first()
+            return session.query(Users).filter(Users.email == email).first()
         elif login != None: 
-            user = session.query(Users).filter(Users.login == login).first()
+            return session.query(Users).filter(Users.login == login).first()
         else: 
             return False
-        if user:
-            return object_to_dict(user)
-    return None
     
 def create_user(data: dict) -> list[dict, Users]:
     try:
@@ -46,17 +46,11 @@ def create_user(data: dict) -> list[dict, Users]:
         return {'detail': 'Something went wrong! 👎'}
     
 def update_user(id: int, data: dict) -> list[dict, Users]:
-    try:
-        updated_user = db.update(Users, id, data)
-        # TO DO - session
-        return {'detail': 'Info about user succesfully updated! 👍'}, updated_user
-    except:
-        return {'detail': 'Something went wrong! 👎'}
+    updated_user = db.update(Users, id, data) # update data in db
+    update_session(updated_user) # update session with changed user info
+    return {'detail': 'Info about user succesfully updated! 👍'}, updated_user
     
 def delete_user(id: int) -> None:
-    try:
-        db.delete(Users, id)
-        # TO DO - session
-        return {'detail': 'User succesfully deleted! 👍'}
-    except:
-        return {'detail': 'Something went wrong! 👎'}
+    db.delete(Users, id) 
+    clear_session() 
+    return {'detail': 'User succesfully deleted! 👍'}
