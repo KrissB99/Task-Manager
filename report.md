@@ -41,3 +41,22 @@ Do zabezpieczenia haseł wykorzystano bibliotekę *bcrypt* wraz z użyciem peppe
         - images (.jpg, .png)
      - __init__.py - połączenie blueprintów z aplikacją
      - const_vars.py - stałe zmienne używane w aplikacji
+
+# 3. Obrazy aplikacji
+## Home Page
+![home_page](https://github.com/KrissB99/Task-Manager/assets/77814273/277d8203-b868-48d9-9f3a-5bd619734a44)
+
+## Register Page
+![register_page](https://github.com/KrissB99/Task-Manager/assets/77814273/ffcaff7b-9f7e-4bc6-9d6a-6a6200a03056)
+
+## Login Page
+![login_page](https://github.com/KrissB99/Task-Manager/assets/77814273/11ceeac9-981a-4d60-be31-b2a1dc141082)
+
+## Dashboard 
+![dashboard_page](https://github.com/KrissB99/Task-Manager/assets/77814273/954139c6-02c8-4f1f-a1ec-85491bc33fc6)
+
+## User Panel 
+![user_panel](https://github.com/KrissB99/Task-Manager/assets/77814273/860320bd-6a99-4971-bc64-9d28cb43faba)
+
+## Admin section (to be continued)
+
